@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temporizador Pomodoro</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #191919;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      padding: 20px;
+      background-color: #1f1f1f;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 
+        0 0 20px rgba(0, 0, 0, 0.5); /* Efecto flotante */
+      position: relative; /* Necesario para el posicionamiento del menú */
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 15px;
+    }
+
+    .timer {
+      font-size: 48px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background-color: #2d2d2d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      box-shadow: 
+        inset 0 0 2px rgba(255, 255, 255, 0.15), 
+        0 15px 30px rgba(255, 255, 255, 0.1),
+        0 -15px 30px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(0, 0, 0, 0.5); /* Shadow inner y efecto flotante */
+      margin: 11px auto;
+    }
+
+    .timer:before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      border-radius: 50%;
+      box-shadow: 
+        0 0 4px rgba(0, 0, 0, 0.6),
+      0 0 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .timer span {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .buttons button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #404040;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .buttons button:hover {
+      background-color: #0056b3;
+    }
+
+    .tab {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .tab button {
+      background-color: #1f1f1f;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 12px 18px;
+      transition: 0.3s;
+      color: #fff;
+      font-size: 16px;
+      border-radius: 8px;
+      margin: 0 5px;
+    }
+
+    .tab button:hover, .tab button.active {
+      background-color: #333;
+    }
+
+    .tabcontent {
+      display: none;
+      padding: 15px;
+    }
+
+    .tabcontent.active {
+      display: block;
+    }
+
+    .menu-icon {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .menu {
+      position: absolute;
+      top: 50px;
+      right: 10px;
+      background-color: #1f1f1f;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      display: none;
+    }
+
+    .menu.active {
+      display: block;
+    }
+
+    .menu label {
+      display: block;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .menu input {
+      width: 50px;
+      padding: 5px;
+      border: none;
+      background-color: #333;
+      color: #fff;
+      border-radius: 4px;
+    }
+
+    .menu button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #404040;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+      display: block;
+      margin: 10px auto;
+      transition: background-color 0.3s ease;
+    }
+
+    .menu button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="menu-icon" onclick="toggleMenu()">
+      <i class="fas fa-bars"></i>
+    </div>
+    <h1>Pomodoro</h1>
+    <div class="tab">
+      <button class="tablinks active" onclick="openTab(event, 'Focus')">Focus</button>
+      <button class="tablinks" onclick="openTab(event, 'short-break')">Short Break</button>
+      <button class="tablinks" onclick="openTab(event, 'long-break')">Long Break</button>
+    </div>
+    <div id="Focus" class="tabcontent active">
+      <div class="timer">
+        <span id="timer">25:00</span>
+      </div>
+      <div class="buttons">
+        <button id="toggle"><i class="fas fa-play"></i></button>
+        <button id="reset"><i class="fas fa-redo"></i></button>
+      </div>
+    </div>
+    <div id="short-break" class="tabcontent">
+      <div class="timer">
+        <span id="short-break-timer">05:00</span>
+      </div>
+      <div class="buttons">
+        <button id="toggle-short-break"><i class="fas fa-play"></i></button>
+        <button id="reset-short-break"><i class="fas fa-redo"></i></button>
+      </div>
+    </div>
+    <div id="long-break" class="tabcontent">
+      <div class="timer">
+        <span id="long-break-timer">15:00</span>
+      </div>
+      <div class="buttons">
+        <button id="toggle-long-break"><i class="fas fa-play"></i></button>
+        <button id="reset-long-break"><i class="fas fa-redo"></i></button>
+      </div>
+    </div>
+    <div class="menu" id="config-menu">
+      <label for="focus-time">Focus Time (min):</label>
+      <input type="number" id="focus-time" value="25" min="1">
+      <label for="short-break-time">Short Break Time (min):</label>
+      <input type="number" id="short-break-time" value="5" min="1">
+      <label for="long-break-time">Long Break Time (min):</label>
+      <input type="number" id="long-break-time" value="15" min="1">
+      <label for="theme-switch">Modo:</label>
+      <select id="theme-switch">
+        <option value="dark">Oscuro</option>
+        <option value="light">Luz</option>
+      </select>
+      <button id="ok-button">OK</button>
+    </div>
+    <!-- Elemento de audio para la alarma -->
+    <audio id="alarm-sound" src="URL_DE_TU_ALARMA.mp3" preload="auto"></audio>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+  <script>
+    let countdown;
+    let timeLeft = null;
+    let menuOpen = false;
+    const menuIcon = document.querySelector('.menu-icon');
+    const menu = document.querySelector('.menu');
+    const focusTimeInput = document.getElementById('focus-time');
+    const shortBreakTimeInput = document.getElementById('short-break-time');
+    const longBreakTimeInput = document.getElementById('long-break-time');
+    const themeSwitch = document.getElementById('theme-switch');
+    const alarmSound = document.getElementById('alarm-sound');
+
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      if (menuOpen) {
+        menu.classList.add('active');
+      } else {
+        menu.classList.remove('active');
+      }
+    }
+
+    // Evitar que el menú se cierre al hacer clic dentro de él
+    menu.addEventListener('click', function(event) {
+      event.stopPropagation();
+    });
+
+    // Cerrar el menú si se hace clic en cualquier parte fuera de él
+    document.addEventListener('click', function(event) {
+      if (menuOpen && !menu.contains(event.target) && !menuIcon.contains(event.target)) {
+        menu.classList.remove('active');
+        menuOpen = false;
+      }
+    });
+
+    function openTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+        tabcontent[i].classList.remove("active");
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove("active");
+      }
+      document.getElementById(tabName).style.display = "block";
+      document.getElementById(tabName).classList.add("active");
+      evt.currentTarget.classList.add("active");
+
+      clearInterval(countdown);
+      timeLeft = null;
+    }
+
+    const timerDisplay = document.getElementById('timer');
+    const shortBreakTimerDisplay = document.getElementById('short-break-timer');
+    const longBreakTimerDisplay = document.getElementById('long-break-timer');
+    const toggleButton = document.getElementById('toggle');
+    const resetButton = document.getElementById('reset');
+    const toggleShortBreakButton = document.getElementById('toggle-short-break');
+    const resetShortBreakButton = document.getElementById('reset-short-break');
+    const toggleLongBreakButton = document.getElementById('toggle-long-break');
+    const resetLongBreakButton = document.getElementById('reset-long-break');
+    const okButton = document.getElementById('ok-button');
+
+    function displayTimeLeft(seconds, displayElement) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      const display = `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+      displayElement.textContent = display;
+    }
+
+    function startTimer(seconds, displayElement, toggleBtn) {
+      clearInterval(countdown);
+      const now = Date.now();
+      const then = now + seconds * 1000;
+      if (isNaN(seconds)) {
+        displayElement.textContent = '00:00';
+        return;
+      }
+      if (timeLeft === null) {
+        timeLeft = seconds;
+      }
+      displayTimeLeft(timeLeft, displayElement);
+      countdown = setInterval(() => {
+        const secondsLeft = Math.round((then - Date.now()) / 1000);
+        if (secondsLeft < 0) {
+          clearInterval(countdown);
+          displayElement.textContent = '¡Tiempo!';
+          toggleBtn.innerHTML = '<i class="fas fa-play"></i>';
+          timeLeft = null;
+          alarmSound.play(); // Reproducir el sonido de la alarma
+          return;
+        }
+        timeLeft = secondsLeft;
+        displayTimeLeft(timeLeft, displayElement);
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(countdown);
+    }
+
+    function resetTimer(displayElement, time, toggleBtn) {
+      clearInterval(countdown);
+      displayElement.textContent = time;
+      toggleBtn.innerHTML = '<i class="fas fa-play"></i>';
+      timeLeft = null;
+    }
+
+    toggleButton.addEventListener('click', () => {
+      const focusMinutes = parseInt(focusTimeInput.value);
+      if (isNaN(focusMinutes) || focusMinutes <= 0) {
+        alert('Por favor ingresa un número válido de minutos para el tiempo de enfoque.');
+        return;
+      }
+      if (toggleButton.innerHTML.includes('fa-play')) {
+        if (timeLeft !== null) {
+          startTimer(timeLeft, timerDisplay, toggleButton);
+        } else {
+          startTimer(focusMinutes * 60, timerDisplay, toggleButton);
+        }
+        toggleButton.innerHTML = '<i class="fas fa-pause"></i>';
+      } else {
+        pauseTimer();
+        toggleButton.innerHTML = '<i class="fas fa-play"></i>';
+      }
+    });
+
+    resetButton.addEventListener('click', () => resetTimer(timerDisplay, '25:00', toggleButton));
+
+    toggleShortBreakButton.addEventListener('click', () => {
+      const shortBreakMinutes = parseInt(shortBreakTimeInput.value);
+      if (isNaN(shortBreakMinutes) || shortBreakMinutes <= 0) {
+        alert('Por favor ingresa un número válido de minutos para el tiempo de descanso corto.');
+        return;
+      }
+      if (toggleShortBreakButton.innerHTML.includes('fa-play')) {
+        if (timeLeft !== null) {
+          startTimer(timeLeft, shortBreakTimerDisplay, toggleShortBreakButton);
+        } else {
+          startTimer(shortBreakMinutes * 60, shortBreakTimerDisplay, toggleShortBreakButton);
+        }
+        toggleShortBreakButton.innerHTML = '<i class="fas fa-pause"></i>';
+      } else {
+        pauseTimer();
+        toggleShortBreakButton.innerHTML = '<i class="fas fa-play"></i>';
+      }
+    });
+
+    resetShortBreakButton.addEventListener('click', () => resetTimer(shortBreakTimerDisplay, '05:00', toggleShortBreakButton));
+
+    toggleLongBreakButton.addEventListener('click', () => {
+      const longBreakMinutes = parseInt(longBreakTimeInput.value);
+      if (isNaN(longBreakMinutes) || longBreakMinutes <= 0) {
+        alert('Por favor ingresa un número válido de minutos para el tiempo de descanso largo.');
+        return;
+      }
+      if (toggleLongBreakButton.innerHTML.includes('fa-play')) {
+        if (timeLeft !== null) {
+          startTimer(timeLeft, longBreakTimerDisplay, toggleLongBreakButton);
+        } else {
+          startTimer(longBreakMinutes * 60, longBreakTimerDisplay, toggleLongBreakButton);
+        }
+        toggleLongBreakButton.innerHTML = '<i class="fas fa-pause"></i>';
+      } else {
+        pauseTimer();
+        toggleLongBreakButton.innerHTML = '<i class="fas fa-play"></i>';
+      }
+    });
+
+    resetLongBreakButton.addEventListener('click', () => resetTimer(longBreakTimerDisplay, '15:00', toggleLongBreakButton));
+
+    okButton.addEventListener('click', function() {
+      // Obtener los valores de los inputs y convertirlos a minutos
+      const focusTime = parseInt(focusTimeInput.value);
+      const shortBreakTime = parseInt(shortBreakTimeInput.value);
+      const longBreakTime = parseInt(longBreakTimeInput.value);
+
+      if (isNaN(focusTime) || isNaN(shortBreakTime) || isNaN(longBreakTime) || focusTime <= 0 || shortBreakTime <= 0 || longBreakTime <= 0) {
+        alert('Por favor ingresa valores válidos para todos los tiempos.');
+        return;
+      }
+
+      // Aplicar los nuevos tiempos
+      resetTimer(timerDisplay, `${focusTime}:00`, toggleButton);
+      resetTimer(shortBreakTimerDisplay, `${shortBreakTime}:00`, toggleShortBreakButton);
+      resetTimer(longBreakTimerDisplay, `${longBreakTime}:00`, toggleLongBreakButton);
+
+      // Cambiar el tema
+      if (themeSwitch.value === 'light') {
+        document.body.style.backgroundColor = '#FFFFFF';
+      } else {
+        document.body.style.backgroundColor = '#191919';
+      }
+
+      // Cerrar el menú
+      toggleMenu();
+    });
+  </script>
+</body>
+</html>
